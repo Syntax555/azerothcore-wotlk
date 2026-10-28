@@ -22,6 +22,7 @@
 #include "ScriptMgr.h"
 #include "SpellInfo.h"
 #include "SpellMgr.h"
+#include <cmath>
 
 namespace Trainer
 {
@@ -37,8 +38,6 @@ namespace Trainer
 
     void Trainer::SendSpells(Creature* npc, Player* player, LocaleConstant locale) const
     {
-        float reputationDiscount = player->GetReputationPriceDiscount(npc);
-
         WorldPackets::NPC::TrainerList trainerList;
         trainerList.TrainerGUID = npc->GetGUID();
         trainerList.TrainerType = AsUnderlyingType(_type);
@@ -66,7 +65,7 @@ namespace Trainer
             WorldPackets::NPC::TrainerListSpell& trainerListSpell = trainerList.Spells.back();
             trainerListSpell.SpellID = trainerSpell.SpellId;
             trainerListSpell.Usable = AsUnderlyingType(GetSpellState(player, &trainerSpell));
-            trainerListSpell.MoneyCost = int32(trainerSpell.MoneyCost * reputationDiscount);
+            trainerListSpell.MoneyCost = int32(GetSpellCost(player, npc, &trainerSpell));
             trainerListSpell.PointCost[0] = 0; // spells don't cost talent points
             trainerListSpell.PointCost[1] = (primaryProfessionFirstRank ? 1 : 0);
             trainerListSpell.ReqLevel = trainerSpell.ReqLevel;
@@ -78,6 +77,22 @@ namespace Trainer
         sScriptMgr->OnPlayerBeforeReceiveSpellListFromTrainer(player, npc, trainerList);
 
         player->SendDirectMessage(trainerList.Write());
+    }
+
+    uint32 Trainer::GetSpellCost(Player const* player, Creature const* npc, Spell const* trainerSpell) const
+    {
+        if (!player || !npc || !trainerSpell)
+            return MAX_MONEY_AMOUNT;
+
+        uint32 moneyCost = trainerSpell->MoneyCost;
+        sScriptMgr->OnPlayerGetTrainerSpellCost(player, npc, trainerSpell->SpellId, moneyCost);
+
+        // Apply the normal faction discount after the per-player base quote.
+        float const discountedCost = moneyCost * player->GetReputationPriceDiscount(npc);
+        if (!std::isfinite(discountedCost) || discountedCost < 0 || double(discountedCost) > MAX_MONEY_AMOUNT)
+            return MAX_MONEY_AMOUNT;
+
+        return uint32(discountedCost);
     }
 
     void Trainer::TeachSpell(Creature* npc, Player* player, uint32 spellId)
@@ -98,15 +113,14 @@ namespace Trainer
             return;
         }
 
-        float reputationDiscount = player->GetReputationPriceDiscount(npc);
-        int32 moneyCost = int32(trainerSpell->MoneyCost * reputationDiscount);
+        uint32 moneyCost = GetSpellCost(player, npc, trainerSpell);
         if (!player->HasEnoughMoney(moneyCost))
         {
             SendTeachFailure(npc, player, spellId, FailReason::NotEnoughMoney);
             return;
         }
 
-        player->ModifyMoney(-moneyCost);
+        player->ModifyMoney(-int32(moneyCost));
 
         npc->SendPlaySpellVisual(179); // 53 SpellCastDirected
         npc->SendPlaySpellImpact(player->GetGUID(), 362); // 113 EmoteSalute

@@ -1004,6 +1004,13 @@ void ScriptMgr::OnPlayerAfterTrainSpell(Player* player, Creature* trainer, uint3
     CALL_ENABLED_HOOKS(PlayerScript, PLAYERHOOK_ON_AFTER_TRAIN_SPELL, script->OnPlayerAfterTrainSpell(player, trainer, spellId));
 }
 
+void ScriptMgr::OnPlayerGetTrainerSpellCost(Player const* player, Creature const* trainer, uint32 spellId,
+                                          uint32& moneyCost)
+{
+    CALL_ENABLED_HOOKS(PlayerScript, PLAYERHOOK_ON_GET_TRAINER_SPELL_COST,
+        script->OnPlayerGetTrainerSpellCost(player, trainer, spellId, moneyCost));
+}
+
 PlayerScript::PlayerScript(char const* name, std::vector<uint16> enabledHooks)
     : ScriptObject(name, PLAYERHOOK_END)
 {

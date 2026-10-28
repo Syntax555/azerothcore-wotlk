@@ -235,6 +235,7 @@ enum PlayerHook
     PLAYERHOOK_ON_BEFORE_RECEIVE_SPELL_LIST_FROM_TRAINER,
     PLAYERHOOK_ON_GET_TRAINER_SPELL_STATE,
     PLAYERHOOK_ON_AFTER_TRAIN_SPELL,
+    PLAYERHOOK_ON_GET_TRAINER_SPELL_COST,
     PLAYERHOOK_END
 };
 
@@ -966,6 +967,14 @@ public:
      * @param spellId The id of the trainer spell that was bought
      */
     virtual void OnPlayerAfterTrainSpell(Player* /*player*/, Creature* /*trainer*/, uint32 /*spellId*/) {}
+
+    /**
+     * Called for both a trainer's displayed quote and its purchase charge.
+     * Edits the base copper cost before the normal reputation discount.
+     * Spell availability, requirements and money checks still apply.
+     */
+    virtual void OnPlayerGetTrainerSpellCost(Player const* /*player*/, Creature const* /*trainer*/,
+                                            uint32 /*spellId*/, uint32& /*moneyCost*/) {}
 };
 
 #endif
