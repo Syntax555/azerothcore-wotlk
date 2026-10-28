@@ -891,7 +891,7 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 diff, BattlegroundTypeId 
             (bg_template->isArena() && CheckSkirmishForSameFaction(bracket_id, MinPlayersPerTeam)))
         {
             // create new battleground
-            Battleground* bg = sBattlegroundMgr->CreateNewBattleground(bgTypeId, bracketEntry, arenaType, false);
+            Battleground* bg = sBattlegroundMgr->CreateNewBattleground(bgTypeId, bracketEntry, arenaType, false, this);
             if (!bg)
             {
                 LOG_ERROR("bg.battleground", "BattlegroundQueue::Update - Cannot create battleground: {}", bgTypeId);
@@ -950,54 +950,18 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 diff, BattlegroundTypeId 
         // timer for previous opponents
         int32 discardOpponentsTime = GameTime::GetGameTimeMS().count() - sWorld->getIntConfig(CONFIG_ARENA_PREV_OPPONENTS_DISCARD_TIMER);
 
-        // we need to find 2 teams which will play next game
         GroupsQueueType::iterator itr_teams[PVP_TEAMS_COUNT];
-        uint8 found = 0;
-        uint8 team = 0;
-
-        for (uint8 i = BG_QUEUE_PREMADE_ALLIANCE; i < BG_QUEUE_NORMAL_ALLIANCE; i++)
-        {
-            // take the group that joined first
-            GroupsQueueType::iterator itr2 = m_QueuedGroups[bracket_id][i].begin();
-            for (; itr2 != m_QueuedGroups[bracket_id][i].end(); ++itr2)
-            {
-                // if group match conditions, then add it to pool
-                if (!(*itr2)->IsInvitedToBGInstanceGUID
-                    && (((*itr2)->ArenaMatchmakerRating >= arenaMinRating && (*itr2)->ArenaMatchmakerRating <= arenaMaxRating)
-                        || (int32)(*itr2)->JoinTime < discardTime))
-                {
-                    itr_teams[found++] = itr2;
-                    team = i;
-                    break;
-                }
-            }
-        }
-
-        if (!found)
-            return;
-
-        if (found == 1)
-        {
-            for (GroupsQueueType::iterator itr3 = itr_teams[0]; itr3 != m_QueuedGroups[bracket_id][team].end(); ++itr3)
-            {
-                if (!(*itr3)->IsInvitedToBGInstanceGUID
-                    && (((*itr3)->ArenaMatchmakerRating >= arenaMinRating && (*itr3)->ArenaMatchmakerRating <= arenaMaxRating) || (int32)(*itr3)->JoinTime < discardTime)
-                    && ((*(itr_teams[0]))->ArenaTeamId != (*itr3)->PreviousOpponentsTeamId || ((int32)(*itr3)->JoinTime < discardOpponentsTime))
-                    && (*(itr_teams[0]))->ArenaTeamId != (*itr3)->ArenaTeamId)
-                {
-                    itr_teams[found++] = itr3;
-                    break;
-                }
-            }
-        }
+        bool const found = SelectRatedArenaTeams(bracket_id, arenaMinRating, arenaMaxRating, discardTime,
+                                                 discardOpponentsTime, itr_teams);
 
         //if we have 2 teams, then start new arena and invite players!
-        if (found == 2)
+        if (found)
         {
             GroupQueueInfo* aTeam = *(itr_teams[TEAM_ALLIANCE]);
             GroupQueueInfo* hTeam = *(itr_teams[TEAM_HORDE]);
 
-            Battleground* arena = sBattlegroundMgr->CreateNewBattleground(bgTypeId, bracketEntry, arenaType, true);
+            Battleground* arena =
+                sBattlegroundMgr->CreateNewBattleground(bgTypeId, bracketEntry, arenaType, true, this, aTeam, hTeam);
             if (!arena)
             {
                 LOG_ERROR("bg.battleground", "BattlegroundQueue::Update couldn't create arena instance for rated arena match!");
@@ -1036,6 +1000,77 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 diff, BattlegroundTypeId 
             arena->StartBattleground();
         }
     }
+}
+
+bool BattlegroundQueue::SelectRatedArenaTeams(BattlegroundBracketId bracketId, uint32 minRating, uint32 maxRating,
+                                              int32 discardTime, int32 discardOpponentsTime,
+                                              GroupsQueueType::iterator (&teams)[PVP_TEAMS_COUNT])
+{
+    auto eligible = [minRating, maxRating, discardTime](GroupQueueInfo const* group)
+    {
+        return !group->IsInvitedToBGInstanceGUID &&
+               ((group->ArenaMatchmakerRating >= minRating && group->ArenaMatchmakerRating <= maxRating) ||
+                int32(group->JoinTime) < discardTime);
+    };
+
+    bool filtered = false;
+    auto compatible = [this, bracketId, &filtered](GroupQueueInfo* first, GroupQueueInfo* second)
+    {
+        bool const allowed = sScriptMgr->CanMatchArenaTeams(this, first, second, bracketId);
+        filtered = filtered || !allowed;
+        return allowed;
+    };
+
+    auto& alliance = m_QueuedGroups[bracketId][BG_QUEUE_PREMADE_ALLIANCE];
+    auto& horde = m_QueuedGroups[bracketId][BG_QUEUE_PREMADE_HORDE];
+
+    // Prefer opposing factions as before, but continue searching after a filtered or stranded anchor.
+    for (auto first = alliance.begin(); first != alliance.end(); ++first)
+    {
+        if (!eligible(*first))
+            continue;
+
+        for (auto second = horde.begin(); second != horde.end(); ++second)
+        {
+            if (!eligible(*second) || !compatible(*first, *second))
+                continue;
+
+            teams[TEAM_ALLIANCE] = first;
+            teams[TEAM_HORDE] = second;
+            return true;
+        }
+    }
+
+    // Same-faction matches retain the native team-id and previous-opponent restrictions.
+    for (uint8 team = BG_QUEUE_PREMADE_ALLIANCE; team < BG_QUEUE_NORMAL_ALLIANCE; ++team)
+    {
+        auto& groups = m_QueuedGroups[bracketId][team];
+        for (auto first = groups.begin(); first != groups.end(); ++first)
+        {
+            if (!eligible(*first))
+                continue;
+
+            auto second = first;
+            for (++second; second != groups.end(); ++second)
+            {
+                if (!eligible(*second) || (*first)->ArenaTeamId == (*second)->ArenaTeamId ||
+                    !compatible(*first, *second) ||
+                    ((*first)->ArenaTeamId == (*second)->PreviousOpponentsTeamId &&
+                     int32((*second)->JoinTime) >= discardOpponentsTime))
+                    continue;
+
+                teams[TEAM_ALLIANCE] = first;
+                teams[TEAM_HORDE] = second;
+                return true;
+            }
+
+            // With no module filter, retain the native first-anchor behavior.
+            if (!filtered)
+                return false;
+        }
+    }
+
+    return false;
 }
 
 void BattlegroundQueue::BattlegroundQueueAnnouncerUpdate(uint32 diff, BattlegroundQueueTypeId bgQueueTypeId, BattlegroundBracketId bracket_id)

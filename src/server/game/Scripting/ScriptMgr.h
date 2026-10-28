@@ -633,6 +633,10 @@ public: /* BGScript */
     void OnBattlegroundCreate(Battleground* bg);
     void OnBattlegroundSetup(Battleground* bg);
     bool CanAddGroupToMatchingPool(BattlegroundQueue* queue, GroupQueueInfo* group, uint32 poolPlayerCount, Battleground* bg, BattlegroundBracketId bracketId);
+    bool CanMatchArenaTeams(BattlegroundQueue* queue, GroupQueueInfo* first, GroupQueueInfo* second,
+                            BattlegroundBracketId bracketId);
+    bool CanSelectArenaMap(BattlegroundTypeId candidate, BattlegroundQueue* queue, BattlegroundBracketId bracketId,
+                           GroupQueueInfo* first, GroupQueueInfo* second);
     bool GetPlayerMatchmakingRating(ObjectGuid playerGuid, BattlegroundTypeId bgTypeId, float& outRating);
 
 public: /* Arena Team Script */

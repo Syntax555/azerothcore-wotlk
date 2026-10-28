@@ -133,6 +133,9 @@ public:
     [[nodiscard]] int32 GetQueueAnnouncementTimer(uint32 bracketId) const;
 
 private:
+    bool SelectRatedArenaTeams(BattlegroundBracketId bracketId, uint32 minRating, uint32 maxRating, int32 discardTime,
+                               int32 discardOpponentsTime, GroupsQueueType::iterator (&teams)[PVP_TEAMS_COUNT]);
+
     uint32 m_WaitTimes[PVP_TEAMS_COUNT][MAX_BATTLEGROUND_BRACKETS][COUNT_OF_PLAYERS_TO_AVERAGE_WAIT_TIME];
     uint32 m_WaitTimeLastIndex[PVP_TEAMS_COUNT][MAX_BATTLEGROUND_BRACKETS];
 

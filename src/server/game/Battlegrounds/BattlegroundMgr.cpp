@@ -376,9 +376,13 @@ uint32 BattlegroundMgr::CreateClientVisibleInstanceId(BattlegroundTypeId bgTypeI
 }
 
 // create a new battleground that will really be used to play
-Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId originalBgTypeId, PvPDifficultyEntry const* bracketEntry, uint8 arenaType, bool isRated)
+Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId originalBgTypeId,
+                                                     PvPDifficultyEntry const* bracketEntry, uint8 arenaType,
+                                                     bool isRated, BattlegroundQueue* queue, GroupQueueInfo* first,
+                                                     GroupQueueInfo* second)
 {
-    BattlegroundTypeId bgTypeId = GetRandomBG(originalBgTypeId, bracketEntry->minLevel);
+    BattlegroundTypeId bgTypeId =
+        GetRandomBG(originalBgTypeId, bracketEntry->minLevel, queue, bracketEntry->GetBracketId(), first, second);
 
     if (originalBgTypeId == BATTLEGROUND_AA)
         originalBgTypeId = bgTypeId;
@@ -911,7 +915,9 @@ bool BattlegroundMgr::IsBGWeekend(BattlegroundTypeId bgTypeId)
     return IsHolidayActive(BGTypeToWeekendHolidayId(bgTypeId));
 }
 
-BattlegroundTypeId BattlegroundMgr::GetRandomBG(BattlegroundTypeId bgTypeId, uint32 minLevel)
+BattlegroundTypeId BattlegroundMgr::GetRandomBG(BattlegroundTypeId bgTypeId, uint32 minLevel, BattlegroundQueue* queue,
+                                                BattlegroundBracketId bracketId, GroupQueueInfo* first,
+                                                GroupQueueInfo* second)
 {
     if (BattlegroundTemplate const* bgTemplate = GetBattlegroundTemplateByTypeId(bgTypeId))
     {
@@ -927,13 +933,17 @@ BattlegroundTypeId BattlegroundMgr::GetRandomBG(BattlegroundTypeId bgTypeId, uin
 
             if (BattlegroundTemplate const* bg = GetBattlegroundTemplateByMapId(mapId))
             {
-                if (bg->MinLevel <= minLevel)
+                if (bg->MinLevel <= minLevel &&
+                    (!IsArenaType(bgTypeId) || sScriptMgr->CanSelectArenaMap(bg->Id, queue, bracketId, first, second)))
                 {
                     ids.push_back(bg->Id);
                     weights.push_back(bg->Weight);
                 }
             }
         }
+
+        if (ids.empty())
+            return BATTLEGROUND_TYPE_NONE;
 
         return *Acore::Containers::SelectRandomWeightedContainerElement(ids, weights);
     }

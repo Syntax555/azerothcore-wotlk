@@ -131,3 +131,17 @@ AllBattlegroundScript::AllBattlegroundScript(char const* name, std::vector<uint1
 }
 
 template class AC_GAME_API ScriptRegistry<AllBattlegroundScript>;
+
+bool ScriptMgr::CanMatchArenaTeams(BattlegroundQueue* queue, GroupQueueInfo* first, GroupQueueInfo* second,
+                                   BattlegroundBracketId bracketId)
+{
+    CALL_ENABLED_BOOLEAN_HOOKS(AllBattlegroundScript, ALLBATTLEGROUNDHOOK_CAN_MATCH_ARENA_TEAMS,
+                               !script->CanMatchArenaTeams(queue, first, second, bracketId));
+}
+
+bool ScriptMgr::CanSelectArenaMap(BattlegroundTypeId candidate, BattlegroundQueue* queue,
+                                  BattlegroundBracketId bracketId, GroupQueueInfo* first, GroupQueueInfo* second)
+{
+    CALL_ENABLED_BOOLEAN_HOOKS(AllBattlegroundScript, ALLBATTLEGROUNDHOOK_CAN_SELECT_ARENA_MAP,
+                               !script->CanSelectArenaMap(candidate, queue, bracketId, first, second));
+}

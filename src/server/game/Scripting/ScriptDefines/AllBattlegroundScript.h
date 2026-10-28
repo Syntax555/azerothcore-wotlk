@@ -44,6 +44,8 @@ enum AllBattlegroundHook
     ALLBATTLEGROUNDHOOK_ON_BATTLEGROUND_SETUP,
     ALLBATTLEGROUNDHOOK_CAN_ADD_GROUP_TO_MATCHING_POOL,
     ALLBATTLEGROUNDHOOK_GET_PLAYER_MATCHMAKING_RATING,
+    ALLBATTLEGROUNDHOOK_CAN_MATCH_ARENA_TEAMS,
+    ALLBATTLEGROUNDHOOK_CAN_SELECT_ARENA_MAP,
     ALLBATTLEGROUNDHOOK_END
 };
 
@@ -161,6 +163,20 @@ public:
      * @return True to allow adding this group, false to skip it
      */
     [[nodiscard]] virtual bool CanAddGroupToMatchingPool(BattlegroundQueue* /*queue*/, GroupQueueInfo* /*group*/, uint32 /*poolPlayerCount*/, Battleground* /*bg*/, BattlegroundBracketId /*bracketId*/) { return true; }
+
+    // Candidate filters run before selection and preserve the native rating and random-map rules.
+    [[nodiscard]] virtual bool CanMatchArenaTeams(BattlegroundQueue* /*queue*/, GroupQueueInfo* /*first*/,
+                                                  GroupQueueInfo* /*second*/, BattlegroundBracketId /*bracketId*/)
+    {
+        return true;
+    }
+
+    [[nodiscard]] virtual bool CanSelectArenaMap(BattlegroundTypeId /*candidate*/, BattlegroundQueue* /*queue*/,
+                                                 BattlegroundBracketId /*bracketId*/, GroupQueueInfo* /*first*/,
+                                                 GroupQueueInfo* /*second*/)
+    {
+        return true;
+    }
 
     /**
      * @brief This hook allows modules to provide matchmaking rating for a player
