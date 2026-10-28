@@ -24,15 +24,15 @@
 
 namespace
 {
-    std::unordered_map<ObjectGuid /*player guid*/, uint32 /*time*/> _players;
-    std::unordered_map<uint32 /*bracket+bg key*/, uint32 /*time*/> _brackets;
+    std::unordered_map<ObjectGuid /*player guid*/, Seconds::rep /*time*/> _players;
+    std::unordered_map<uint32 /*bracket+bg key*/, Seconds::rep /*time*/> _brackets;
 
     void AddTime(ObjectGuid guid)
     {
         _players.insert_or_assign(guid, GameTime::GetGameTime().count());
     }
 
-    uint32 GetTime(ObjectGuid guid)
+    Seconds::rep GetTime(ObjectGuid guid)
     {
         auto const& itr = _players.find(guid);
         if (itr != _players.end())
@@ -54,7 +54,7 @@ namespace
         _brackets.insert_or_assign(key, GameTime::GetGameTime().count());
     }
 
-    uint32 GetTime(uint32 key)
+    Seconds::rep GetTime(uint32 key)
     {
         auto const& itr = _brackets.find(key);
         if (itr != _brackets.end())

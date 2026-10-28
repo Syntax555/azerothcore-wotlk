@@ -133,7 +133,7 @@ protected:
     void HandleNewSocketsProxyReadingOnConnect()
     {
         std::size_t index = 0;
-        std::vector<int> newSocketsToRemoveIndexes;
+        std::vector<std::size_t> newSocketsToRemoveIndexes;
         for (auto sock_iter = _newSockets.begin(); sock_iter != _newSockets.end(); ++sock_iter, ++index)
         {
             std::shared_ptr<SocketType> sock = *sock_iter;
