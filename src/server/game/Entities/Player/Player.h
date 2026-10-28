@@ -1742,6 +1742,8 @@ public:
     void SetFreeTalentPoints(uint32 points);
     bool resetTalents(bool noResetCost = false);
     [[nodiscard]] uint32 resetTalentsCost() const;
+    void RecordTalentReset(uint32 paidCost);  // custom trees share the native persisted reset counter
+    void CompleteCustomTalentReset();         // OnPlayerTalentsReset hook only: consume successful external handling
     bool IsMaxLevel() const;
     void InitTalentForLevel();
     void BuildPlayerTalentsInfoData(WorldPacket* data);
@@ -2952,6 +2954,7 @@ protected:
     uint32 _restFlagMask;
     ////////////////////Rest System/////////////////////
     uint32 m_resetTalentsCost;
+    bool m_customTalentsResetCompleted = false;
     time_t m_resetTalentsTime;
     uint32 m_usedTalentCount;
     uint32 m_questRewardTalentCount;
