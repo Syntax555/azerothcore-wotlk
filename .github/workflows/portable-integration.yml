@@ -2,7 +2,7 @@ name: Portable integration
 
 on:
   push:
-    branches: [main]
+    branches: [Playerbot]
   pull_request:
   workflow_dispatch:
 

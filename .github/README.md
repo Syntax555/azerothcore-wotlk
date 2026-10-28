@@ -4,7 +4,7 @@ This core fork is maintained for
 [AzerothCore Playerbots Portable](https://github.com/Syntax555/mod-playerbots-portable/blob/main/README.md). Its original upstream is
 [mod-playerbots/azerothcore-wotlk](https://github.com/mod-playerbots/azerothcore-wotlk), imported at
 [`3f2969ddb0da`](https://github.com/mod-playerbots/azerothcore-wotlk/commit/3f2969ddb0da42b48b4fca050c02b19163ba1e20).
-The assembly pins a tested commit of this fork's `main` branch in
+The assembly pins a tested commit of this fork's `Playerbot` branch in
 [`versions.lock.json`](https://github.com/Syntax555/mod-playerbots-portable/blob/main/versions.lock.json), together with its matching native modules.
 
 Use the assembly's [installation and build instructions](https://github.com/Syntax555/mod-playerbots-portable/blob/main/README.md)
