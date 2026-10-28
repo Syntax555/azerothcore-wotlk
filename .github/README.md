@@ -1,3 +1,22 @@
+## Portable assembly integration
+
+This core fork is maintained for
+[AzerothCore Playerbots Portable](https://github.com/Syntax555/mod-playerbots-portable/blob/main/README.md). Its original upstream is
+[mod-playerbots/azerothcore-wotlk](https://github.com/mod-playerbots/azerothcore-wotlk), imported at
+[`3f2969ddb0da`](https://github.com/mod-playerbots/azerothcore-wotlk/commit/3f2969ddb0da42b48b4fca050c02b19163ba1e20).
+The assembly pins a tested commit of this fork's `main` branch in
+[`versions.lock.json`](https://github.com/Syntax555/mod-playerbots-portable/blob/main/versions.lock.json), together with its matching native modules.
+
+Use the assembly's [installation and build instructions](https://github.com/Syntax555/mod-playerbots-portable/blob/main/README.md)
+and [core integration guide](https://github.com/Syntax555/mod-playerbots-portable/blob/main/docs/module-versions.md#core).
+Before contributing, read its [repository rules](https://github.com/Syntax555/mod-playerbots-portable/blob/main/AGENTS.md) and
+[fork workflow](https://github.com/Syntax555/mod-playerbots-portable/blob/main/CONTRIBUTING.md#changing-the-server).
+The **Portable integration** workflow prepares this fork's current core commit
+with the assembly's pinned modules and runs the relevant production fixtures.
+
+---
+
+
 # ![logo](https://raw.githubusercontent.com/azerothcore/azerothcore.github.io/master/images/logo-github.png) AzerothCore
 
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)

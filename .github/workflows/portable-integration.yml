@@ -1,0 +1,73 @@
+name: Portable integration
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: portable-integration-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  integration:
+    name: Check earned-progression integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+        working-directory: portable
+    steps:
+      - name: Check out the core under test
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          path: core
+          persist-credentials: false
+
+      - name: Check out the portable assembly
+        uses: actions/checkout@v7
+        with:
+          repository: Syntax555/mod-playerbots-portable
+          ref: main
+          path: portable
+          persist-credentials: false
+
+      - name: Install native fixture dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y build-essential cmake lua5.1 python3-venv
+          python3 -m venv "$RUNNER_TEMP/gameplay-python"
+          "$RUNNER_TEMP/gameplay-python/bin/python" -m pip install 'PyYAML==6.0.3'
+          echo "$RUNNER_TEMP/gameplay-python/bin" >> "$GITHUB_PATH"
+          lua5.1 -e 'assert(_VERSION == "Lua 5.1")'
+
+      - name: Select the current core with the pinned assembly
+        env:
+          CORE_REPOSITORY: ${{ github.repository }}
+        run: |
+          python3 - <<'PYCORE'
+          import json
+          import os
+          from pathlib import Path
+          import subprocess
+
+          lockfile = Path('versions.lock.json')
+          lock = json.loads(lockfile.read_text())
+          lock['core']['url'] = 'https://github.com/' + os.environ['CORE_REPOSITORY'] + '.git'
+          lock['core']['revision'] = subprocess.check_output(
+              ['git', '-C', '../core', 'rev-parse', 'HEAD'], text=True).strip()
+          lock['core']['patches'] = []
+          lockfile.write_text(json.dumps(lock, indent=2) + '\n')
+          PYCORE
+
+      - name: Prepare the current core and pinned modules
+        run: cmake -P cmake/PrepareModules.cmake
+
+      - name: Test the core's native integration
+        run: python3 cmake/tests/run_fixtures.py core
