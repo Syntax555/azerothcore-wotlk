@@ -353,6 +353,16 @@ bool BattlegroundEY::SetupBattleground()
     return true;
 }
 
+void BattlegroundEY::ConfigureScoreLimit(uint32 maxScore)
+{
+    // Resolve the earned match era before any player enters or score is earned.
+    if (!GetInstanceID() || GetStatus() != STATUS_WAIT_JOIN || GetStartTime() || GetPlayersSize() || !maxScore ||
+        maxScore > 0x7FFFFFFF)
+        return;
+
+    _configurableMaxTeamScore = maxScore;
+}
+
 void BattlegroundEY::Init()
 {
     //call parent's class reset

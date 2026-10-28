@@ -25,7 +25,6 @@
 #define BG_AV_CAPTIME                   240000  //4:00
 #define BG_AV_SNOWFALL_FIRSTCAP         300000  //5:00 but i also have seen 4:05
 
-#define BG_AV_SCORE_INITIAL_POINTS      (sWorld->getIntConfig(CONFIG_BATTLEGROUND_ALTERAC_REINFORCEMENTS)) // Blizzlike default is 600
 #define SEND_MSG_NEAR_LOSE              120
 
 #define BG_AV_KILL_BOSS                 4
@@ -1778,6 +1777,8 @@ public:
 
     /*general stuff*/
     void UpdateScore(TeamId teamId, int16 points);
+    void ConfigureReinforcements(uint32 reinforcements);
+    [[nodiscard]] uint32 GetInitialReinforcements() const { return _initialReinforcements; }
     bool UpdatePlayerScore(Player* player, uint32 type, uint32 value, bool doAddHonor = true) override;
 
     /*handlestuff*/ //these are functions which get called from extern
@@ -1843,6 +1844,7 @@ private:
 
     /*variables */
     int32 m_Team_Scores[2] {};
+    uint32 _initialReinforcements = 0;
     uint32 m_Team_QuestStatus[2][9] {}; //[x][y] x=team y=questcounter
 
     BG_AV_NodeInfo m_Nodes[BG_AV_NODES_MAX] {};

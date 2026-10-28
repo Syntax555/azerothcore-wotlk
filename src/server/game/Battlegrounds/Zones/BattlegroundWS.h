@@ -251,11 +251,14 @@ public:
 
     TeamId GetPrematureWinner() override;
     uint32 GetMatchTime() const { return 1 + (BG_WS_TOTAL_GAME_TIME - GetStartTime()) / (MINUTE * IN_MILLISECONDS); }
+    void ConfigureEraRules(uint8 era);
     uint32 GetAssaultSpellId() const;
     void RemoveAssaultAuras();
 
 private:
     EventMap _bgEvents;
+    bool _timeLimitEnabled = true;
+    bool _assaultDebuffsEnabled = true;
 
     ObjectGuid _flagKeepers[2];
     ObjectGuid _droppedFlagGUID[2];

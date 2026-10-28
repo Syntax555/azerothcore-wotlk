@@ -107,7 +107,7 @@ void BattlegroundAB::PostUpdateImpl(uint32 diff)
 
                         auto honorRewards = uint8(m_TeamScores[teamId] / _honorTics);
                         auto reputationRewards = uint8(m_TeamScores[teamId] / _reputationTics);
-                        auto information = uint8(m_TeamScores[teamId] / BG_AB_WARNING_NEAR_VICTORY_SCORE);
+                        auto information = uint8(m_TeamScores[teamId] / _configurableNearVictoryScore);
                         m_TeamScores[teamId] += BG_AB_TickPoints[controlledPoints];
                         if (m_TeamScores[teamId] > static_cast<int32>(_configurableMaxTeamScore))
                             m_TeamScores[teamId] = _configurableMaxTeamScore;
@@ -116,7 +116,7 @@ void BattlegroundAB::PostUpdateImpl(uint32 diff)
                             RewardHonorToTeam(GetBonusHonorFromKill(1), teamId);
                         if (reputationRewards < uint8(m_TeamScores[teamId] / _reputationTics))
                             RewardReputationToTeam(teamId == TEAM_ALLIANCE ? 509 : 510, uint32(10 * _abReputationRate), teamId);
-                        if (information < uint8(m_TeamScores[teamId] / BG_AB_WARNING_NEAR_VICTORY_SCORE))
+                        if (information < uint8(m_TeamScores[teamId] / _configurableNearVictoryScore))
                         {
                             if (teamId == TEAM_ALLIANCE)
                             {
@@ -250,7 +250,7 @@ void BattlegroundAB::FillInitialWorldStates(WorldPackets::WorldState::InitWorldS
     packet.Worldstates.emplace_back(WORLD_STATE_BATTLEGROUND_AB_OCCUPIED_BASES_ALLIANCE, _controlledPoints[TEAM_ALLIANCE]);
     packet.Worldstates.emplace_back(WORLD_STATE_BATTLEGROUND_AB_OCCUPIED_BASES_HORDE, _controlledPoints[TEAM_HORDE]);
     packet.Worldstates.emplace_back(WORLD_STATE_BATTLEGROUND_AB_RESOURCES_MAX, _configurableMaxTeamScore);
-    packet.Worldstates.emplace_back(WORLD_STATE_BATTLEGROUND_AB_RESOURCES_WARNING, BG_AB_WARNING_NEAR_VICTORY_SCORE);
+    packet.Worldstates.emplace_back(WORLD_STATE_BATTLEGROUND_AB_RESOURCES_WARNING, _configurableNearVictoryScore);
     packet.Worldstates.emplace_back(WORLD_STATE_BATTLEGROUND_AB_RESOURCES_ALLIANCE, m_TeamScores[TEAM_ALLIANCE]);
     packet.Worldstates.emplace_back(WORLD_STATE_BATTLEGROUND_AB_RESOURCES_HORDE, m_TeamScores[TEAM_HORDE]);
     packet.Worldstates.emplace_back(WORLD_STATE_BATTLEGROUND_AB_UNK, 2);
@@ -462,6 +462,17 @@ bool BattlegroundAB::SetupBattleground()
     return true;
 }
 
+void BattlegroundAB::ConfigureScoreLimit(uint32 maxScore, uint32 nearVictoryScore)
+{
+    // Match selection fixes the rules before the first player enters.
+    if (!GetInstanceID() || GetStatus() != STATUS_WAIT_JOIN || GetStartTime() || GetPlayersSize() || !maxScore ||
+        !nearVictoryScore || nearVictoryScore >= maxScore || maxScore > 0x7FFFFFFF)
+        return;
+
+    _configurableMaxTeamScore = maxScore;
+    _configurableNearVictoryScore = nearVictoryScore;
+}
+
 void BattlegroundAB::Init()
 {
     //call parent's class reset
@@ -481,6 +492,7 @@ void BattlegroundAB::Init()
     _capturePointInfo[BG_AB_NODE_GOLD_MINE]._iconCapture = WORLD_STATE_BATTLEGROUND_AB_GOLDMINE_STATE_ALLIANCE;
 
     uint32 bgArathiCapturePointsConfig = sWorld->getIntConfig(CONFIG_BATTLEGROUND_ARATHI_CAPTUREPOINTS);
+    _configurableNearVictoryScore = BG_AB_WARNING_NEAR_VICTORY_SCORE;
     _configurableMaxTeamScore = bgArathiCapturePointsConfig > 0
         ? bgArathiCapturePointsConfig
         : static_cast<uint32>(BG_AB_MAX_TEAM_SCORE);

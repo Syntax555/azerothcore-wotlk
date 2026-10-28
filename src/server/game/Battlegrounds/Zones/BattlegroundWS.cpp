@@ -62,10 +62,14 @@ void BattlegroundWS::PostUpdateImpl(uint32 diff)
         switch (_bgEvents.ExecuteEvent())
         {
             case BG_WS_EVENT_UPDATE_GAME_TIME:
+                if (!_timeLimitEnabled)
+                    break;
                 UpdateWorldState(WORLD_STATE_BATTLEGROUND_WS_STATE_TIMER, GetMatchTime());
                 _bgEvents.ScheduleEvent(BG_WS_EVENT_UPDATE_GAME_TIME, Milliseconds(((BG_WS_TOTAL_GAME_TIME - GetStartTime()) % (MINUTE * IN_MILLISECONDS)) + 1));
                 break;
             case BG_WS_EVENT_NO_TIME_LEFT:
+                if (!_timeLimitEnabled)
+                    break;
                 if (GetTeamScore(TEAM_ALLIANCE) == GetTeamScore(TEAM_HORDE))
                     EndBattleground(_lastFlagCaptureTeam);
                 else
@@ -84,12 +88,16 @@ void BattlegroundWS::PostUpdateImpl(uint32 diff)
                 RespawnFlagAfterDrop(TEAM_HORDE);
                 break;
             case BG_WS_EVENT_BOTH_FLAGS_KEPT10:
+                if (!_assaultDebuffsEnabled)
+                    break;
                 if (Player* player = ObjectAccessor::GetPlayer(FindBgMap(), GetFlagPickerGUID(TEAM_ALLIANCE)))
                     player->CastSpell(player, BG_WS_SPELL_FOCUSED_ASSAULT, true);
                 if (Player* player = ObjectAccessor::GetPlayer(FindBgMap(), GetFlagPickerGUID(TEAM_HORDE)))
                     player->CastSpell(player, BG_WS_SPELL_FOCUSED_ASSAULT, true);
                 break;
             case BG_WS_EVENT_BOTH_FLAGS_KEPT15:
+                if (!_assaultDebuffsEnabled)
+                    break;
                 if (Player* player = ObjectAccessor::GetPlayer(FindBgMap(), GetFlagPickerGUID(TEAM_ALLIANCE)))
                 {
                     player->RemoveAurasDueToSpell(BG_WS_SPELL_FOCUSED_ASSAULT);
@@ -136,9 +144,15 @@ void BattlegroundWS::StartingEventOpenDoors()
     SpawnBGObject(BG_WS_OBJECT_DOOR_H_4, RESPAWN_ONE_DAY);
 
     StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, WS_EVENT_START_BATTLE);
-    UpdateWorldState(WORLD_STATE_BATTLEGROUND_WS_STATE_TIMER_ACTIVE, 1);
-    _bgEvents.ScheduleEvent(BG_WS_EVENT_UPDATE_GAME_TIME, 0ms);
-    _bgEvents.ScheduleEvent(BG_WS_EVENT_NO_TIME_LEFT, Milliseconds(BG_WS_TOTAL_GAME_TIME - 2 * MINUTE * IN_MILLISECONDS)); // 27 - 2 = 25 minutes
+    UpdateWorldState(WORLD_STATE_BATTLEGROUND_WS_STATE_TIMER_ACTIVE, _timeLimitEnabled ? 1 : 0);
+    if (_timeLimitEnabled)
+    {
+        _bgEvents.ScheduleEvent(BG_WS_EVENT_UPDATE_GAME_TIME, 0ms);
+        _bgEvents.ScheduleEvent(BG_WS_EVENT_NO_TIME_LEFT,
+                                Milliseconds(BG_WS_TOTAL_GAME_TIME - 2 * MINUTE * IN_MILLISECONDS));  // 25 minutes
+    }
+    else
+        UpdateWorldState(WORLD_STATE_BATTLEGROUND_WS_STATE_TIMER, 0);
     _bgEvents.ScheduleEvent(BG_WS_EVENT_DESPAWN_DOORS, BG_WS_DOOR_DESPAWN_TIME);
 }
 
@@ -284,7 +298,7 @@ void BattlegroundWS::EventPlayerClickedOnFlag(Player* player, GameObject* gameOb
         PlaySoundToAll(BG_WS_SOUND_ALLIANCE_FLAG_PICKED_UP);
         SendBroadcastText(BG_WS_TEXT_ALLIANCE_FLAG_PICKED_UP, CHAT_MSG_BG_SYSTEM_HORDE, player);
 
-        if (GetFlagState(TEAM_HORDE) != BG_WS_FLAG_STATE_ON_BASE)
+        if (_assaultDebuffsEnabled && GetFlagState(TEAM_HORDE) != BG_WS_FLAG_STATE_ON_BASE)
         {
             _bgEvents.RescheduleEvent(BG_WS_EVENT_BOTH_FLAGS_KEPT10, BG_WS_SPELL_FORCE_TIME);
             _bgEvents.RescheduleEvent(BG_WS_EVENT_BOTH_FLAGS_KEPT15, BG_WS_SPELL_BRUTAL_TIME);
@@ -304,7 +318,7 @@ void BattlegroundWS::EventPlayerClickedOnFlag(Player* player, GameObject* gameOb
         PlaySoundToAll(BG_WS_SOUND_HORDE_FLAG_PICKED_UP);
         SendBroadcastText(BG_WS_TEXT_HORDE_FLAG_PICKED_UP, CHAT_MSG_BG_SYSTEM_ALLIANCE, player);
 
-        if (GetFlagState(TEAM_ALLIANCE) != BG_WS_FLAG_STATE_ON_BASE)
+        if (_assaultDebuffsEnabled && GetFlagState(TEAM_ALLIANCE) != BG_WS_FLAG_STATE_ON_BASE)
         {
             _bgEvents.RescheduleEvent(BG_WS_EVENT_BOTH_FLAGS_KEPT10, BG_WS_SPELL_FORCE_TIME);
             _bgEvents.RescheduleEvent(BG_WS_EVENT_BOTH_FLAGS_KEPT15, BG_WS_SPELL_BRUTAL_TIME);
@@ -487,12 +501,23 @@ bool BattlegroundWS::SetupBattleground()
     return true;
 }
 
+void BattlegroundWS::ConfigureEraRules(uint8 era)
+{
+    if (!GetInstanceID() || GetStatus() != STATUS_WAIT_JOIN || GetStartTime() || GetPlayersSize() || era > 2)
+        return;
+
+    _timeLimitEnabled = era >= 2;
+    _assaultDebuffsEnabled = era >= 1;
+}
+
 void BattlegroundWS::Init()
 {
     //call parent's class reset
     Battleground::Init();
 
     _bgEvents.Reset();
+    _timeLimitEnabled = true;
+    _assaultDebuffsEnabled = true;
     _flagKeepers[TEAM_ALLIANCE].Clear();
     _flagKeepers[TEAM_HORDE].Clear();
     _droppedFlagGUID[TEAM_ALLIANCE].Clear();
@@ -561,8 +586,9 @@ void BattlegroundWS::FillInitialWorldStates(WorldPackets::WorldState::InitWorldS
     packet.Worldstates.emplace_back(WORLD_STATE_BATTLEGROUND_WS_FLAG_CAPTURES_HORDE, GetTeamScore(TEAM_HORDE));
     packet.Worldstates.emplace_back(WORLD_STATE_BATTLEGROUND_WS_FLAG_CAPTURES_MAX, _configurableMaxTeamScore);
 
-    packet.Worldstates.emplace_back(WORLD_STATE_BATTLEGROUND_WS_STATE_TIMER_ACTIVE, GetStatus() == STATUS_IN_PROGRESS ? 1 : 0);
-    packet.Worldstates.emplace_back(WORLD_STATE_BATTLEGROUND_WS_STATE_TIMER, GetMatchTime());
+    packet.Worldstates.emplace_back(WORLD_STATE_BATTLEGROUND_WS_STATE_TIMER_ACTIVE,
+                                    _timeLimitEnabled && GetStatus() == STATUS_IN_PROGRESS ? 1 : 0);
+    packet.Worldstates.emplace_back(WORLD_STATE_BATTLEGROUND_WS_STATE_TIMER, _timeLimitEnabled ? GetMatchTime() : 0);
 
     packet.Worldstates.emplace_back(WORLD_STATE_BATTLEGROUND_WS_FLAG_STATE_HORDE, GetFlagState(TEAM_HORDE));
     packet.Worldstates.emplace_back(WORLD_STATE_BATTLEGROUND_WS_FLAG_STATE_ALLIANCE, GetFlagState(TEAM_ALLIANCE));
@@ -578,6 +604,9 @@ TeamId BattlegroundWS::GetPrematureWinner()
 
 uint32 BattlegroundWS::GetAssaultSpellId() const
 {
+    if (!_assaultDebuffsEnabled)
+        return 0;
+
     if ((!GetFlagPickerGUID(TEAM_ALLIANCE) && GetFlagState(TEAM_ALLIANCE) != BG_WS_FLAG_STATE_ON_GROUND) ||
             (!GetFlagPickerGUID(TEAM_HORDE) && GetFlagState(TEAM_HORDE) != BG_WS_FLAG_STATE_ON_GROUND) ||
             _bgEvents.HasTimeUntilEvent(BG_WS_EVENT_BOTH_FLAGS_KEPT10))

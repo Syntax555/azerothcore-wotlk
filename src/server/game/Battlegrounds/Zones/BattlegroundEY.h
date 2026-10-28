@@ -386,6 +386,8 @@ public:
     /* achievement req. */
     bool AllNodesConrolledByTeam(TeamId teamId) const override;
     TeamId GetPrematureWinner() override;
+    void ConfigureScoreLimit(uint32 maxScore);
+    [[nodiscard]] uint32 GetConfiguredMaxScore() const { return _configurableMaxTeamScore; }
 
 private:
     void PostUpdateImpl(uint32 diff) override;

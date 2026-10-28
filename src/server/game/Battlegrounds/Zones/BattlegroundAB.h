@@ -273,6 +273,10 @@ public:
     bool IsTeamScores500Disadvantage(TeamId teamId) const { return _teamScores500Disadvantage[teamId]; }
 
     TeamId GetPrematureWinner() override;
+    void ConfigureScoreLimit(uint32 maxScore, uint32 nearVictoryScore);
+    [[nodiscard]] uint32 GetConfiguredMaxScore() const { return _configurableMaxTeamScore; }
+    [[nodiscard]] uint32 GetConfiguredNearVictoryScore() const { return _configurableNearVictoryScore; }
+
 private:
     void PostUpdateImpl(uint32 diff) override;
 
@@ -312,5 +316,6 @@ private:
     uint8 _controlledPoints[PVP_TEAMS_COUNT] {};
     bool _teamScores500Disadvantage[PVP_TEAMS_COUNT] {};
     uint32 _configurableMaxTeamScore;
+    uint32 _configurableNearVictoryScore = BG_AB_WARNING_NEAR_VICTORY_SCORE;
 };
 #endif
