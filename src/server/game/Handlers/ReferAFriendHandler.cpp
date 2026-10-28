@@ -77,6 +77,12 @@ void WorldSession::HandleAcceptGrantLevel(WorldPacket& recvData)
     if (GetAccountId() != other->GetSession()->GetRecruiterId())
         return;
 
+    // HandleGrantLevel refuses to propose these grants; accepting must not skip its checks.
+    if (_player->GetLevel() >= sWorld->getIntConfig(CONFIG_MAX_RECRUIT_A_FRIEND_BONUS_PLAYER_LEVEL) ||
+        _player->GetLevel() >= other->GetLevel() || _player->GetTeamId() != other->GetTeamId() ||
+        _player->GetGroup() != other->GetGroup())
+        return;
+
     if (other->GetGrantableLevels())
         other->SetGrantableLevels(other->GetGrantableLevels() - 1);
     else
