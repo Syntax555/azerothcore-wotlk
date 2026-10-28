@@ -1,114 +1,54 @@
-## Portable assembly integration
+# AzerothCore Playerbots core — portable integration
 
-This core fork is maintained for
-[AzerothCore Playerbots Portable](https://github.com/Syntax555/mod-playerbots-portable/blob/main/README.md). Its original upstream is
-[mod-playerbots/azerothcore-wotlk](https://github.com/mod-playerbots/azerothcore-wotlk), imported at
-[`3f2969ddb0da`](https://github.com/mod-playerbots/azerothcore-wotlk/commit/3f2969ddb0da42b48b4fca050c02b19163ba1e20).
-The assembly pins a tested commit of this fork's `Playerbot` branch in
-[`versions.lock.json`](https://github.com/Syntax555/mod-playerbots-portable/blob/main/versions.lock.json), together with its matching native modules.
+This fork supplies the WoW 3.3.5a (build 12340) core for
+[AzerothCore Playerbots Portable](https://github.com/Syntax555/mod-playerbots-portable).
+It combines the Playerbots core APIs with earned-era spell, experience,
+riding and PvP rules used by the assembly's matching modules.
 
-Use the assembly's [installation and build instructions](https://github.com/Syntax555/mod-playerbots-portable/blob/main/README.md)
-and [core integration guide](https://github.com/Syntax555/mod-playerbots-portable/blob/main/docs/module-versions.md#core).
-Before contributing, read its [repository rules](https://github.com/Syntax555/mod-playerbots-portable/blob/main/AGENTS.md) and
-[fork workflow](https://github.com/Syntax555/mod-playerbots-portable/blob/main/CONTRIBUTING.md#changing-the-server).
-The **Portable integration** workflow prepares this fork's current core commit
-with the assembly's pinned modules and runs the relevant production fixtures.
+## Install or build
 
----
+For normal use, download the Windows server and matching EraTalents client pack
+from the assembly's [Latest release](https://github.com/Syntax555/mod-playerbots-portable/releases/latest),
+then follow its [quick start](https://github.com/Syntax555/mod-playerbots-portable#quick-start).
 
+For source builds, use the assembly's
+[build guide](https://github.com/Syntax555/mod-playerbots-portable/blob/main/docs/building.md).
+Its [versions.lock.json](https://github.com/Syntax555/mod-playerbots-portable/blob/main/versions.lock.json)
+selects the exact core commit and all matching module commits. This fork's
+`Playerbot` branch is the development branch; use the locked revisions to
+reproduce an assembly. Mixing this core with other module revisions is not a
+verified configuration.
 
-# ![logo](https://raw.githubusercontent.com/azerothcore/azerothcore.github.io/master/images/logo-github.png) AzerothCore
+## Behavior and scope
 
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
-[![CodeFactor](https://www.codefactor.io/repository/github/azerothcore/azerothcore-wotlk/badge)](https://www.codefactor.io/repository/github/azerothcore/azerothcore-wotlk)
-[![Discord](https://img.shields.io/discord/217589275766685707?logo=discord&logoColor=white)](https://discord.gg/gkt4y2x "Our community hub on Discord")
+Content access follows each character's earned Individual Progression era,
+independently of level, account or party leader. Historical talents require the
+matching EraTalents server module and client files. Humans, active SelfBots and
+controlled altbots retain their normal character rights and manual talents.
+The assembly configures these integrations in `configs/worldserver.conf` and
+`configs/modules/`; cloning the core alone does not apply those settings.
 
-## Build Status
+The engine and client remain Wrath-based. Selected historical rules do not make
+this an exact Vanilla or original TBC simulation. Source fixtures cover specific
+contracts; they do not establish complete gameplay, raid, class or population
+coverage. See the [supported scope](https://github.com/Syntax555/mod-playerbots-portable/blob/main/docs/configuration.md#supported-scope)
+and [validation work](https://github.com/Syntax555/mod-playerbots-portable/blob/main/docs/todo.md).
 
-[![nopch-build](https://github.com/azerothcore/azerothcore-wotlk/actions/workflows/core-build-nopch.yml/badge.svg?branch=master)](https://github.com/azerothcore/azerothcore-wotlk/actions/workflows/core-build-nopch.yml?query=branch%3Amaster)
-[![pch-build](https://github.com/azerothcore/azerothcore-wotlk/actions/workflows/core-build-pch.yml/badge.svg?branch=master)](https://github.com/azerothcore/azerothcore-wotlk/actions/workflows/core-build-pch.yml?query=branch%3Amaster)
-[![core-modules-build](https://github.com/azerothcore/azerothcore-wotlk/actions/workflows/core_modules_build.yml/badge.svg?branch=master)](https://github.com/azerothcore/azerothcore-wotlk/actions/workflows/core_modules_build.yml?query=branch%3Amaster)
-[![windows-build](https://github.com/azerothcore/azerothcore-wotlk/actions/workflows/windows_build.yml/badge.svg?branch=master)](https://github.com/azerothcore/azerothcore-wotlk/actions/workflows/windows_build.yml?query=branch%3Amaster)
-[![macos-build](https://github.com/azerothcore/azerothcore-wotlk/actions/workflows/macos_build.yml/badge.svg?branch=master)](https://github.com/azerothcore/azerothcore-wotlk/actions/workflows/macos_build.yml?query=branch%3Amaster)
-[![docker-build](https://github.com/azerothcore/azerothcore-wotlk/actions/workflows/docker_build.yml/badge.svg?branch=master)](https://github.com/azerothcore/azerothcore-wotlk/actions/workflows/docker_build.yml?query=branch%3Amaster)
-[![tools-build](https://github.com/azerothcore/azerothcore-wotlk/actions/workflows/tools_build.yml/badge.svg?branch=master)](https://github.com/azerothcore/azerothcore-wotlk/actions/workflows/tools_build.yml?query=branch%3Amaster)
-[![dashboard-ci](https://github.com/azerothcore/azerothcore-wotlk/actions/workflows/dashboard-ci.yml/badge.svg?branch=master)](https://github.com/azerothcore/azerothcore-wotlk/actions/workflows/dashboard-ci.yml?query=branch%3Amaster)
+## Development and provenance
 
-## Introduction
+Read [AGENTS.md](../AGENTS.md), the assembly's
+[contributing guide](https://github.com/Syntax555/mod-playerbots-portable/blob/main/CONTRIBUTING.md)
+and [core integration reference](https://github.com/Syntax555/mod-playerbots-portable/blob/main/docs/module-versions.md#server-modules).
+Make validated changes on `Playerbot`, then update the assembly pin. Preserve
+earned-play gates, characters, databases, configuration and pinned history.
 
-AzerothCore is an open-source game server application and framework designed for hosting massively multiplayer online role-playing games (MMORPGs). It is based on the popular MMORPG World of Warcraft (WoW) and seeks to recreate the gameplay experience of the original game from patch 3.3.5a.
+The original Playerbots core was imported from
+[mod-playerbots/azerothcore-wotlk at `3f2969ddb0da`](https://github.com/mod-playerbots/azerothcore-wotlk/commit/3f2969ddb0da42b48b4fca050c02b19163ba1e20).
+Its [original README](https://github.com/mod-playerbots/azerothcore-wotlk/blob/3f2969ddb0da42b48b4fca050c02b19163ba1e20/.github/README.md)
+and [AzerothCore wiki](https://www.azerothcore.org/wiki/) provide general engine
+and API documentation; the assembly guides define this fork's installation.
 
-The original code is based on MaNGOS, TrinityCore, and SunwellCore and has since then had extensive development to improve stability, in-game mechanics, and modularity to the game. AC has also grown into a community-driven project with a significant number of contributors and developers. It is written in C++ and provides a solid foundation for creating private servers that mimic the mechanics and behavior of the official WoW servers.
-
-## Philosophy
-
-Our main goal is to create a playable game server, offering a fully working in-game experience.
-
-Here are the main points we focus on:
-
-* Stability
-  * We make sure all changes pass the CIs before being merged into the master branch.
-
-* Blizzlike content
-  * We strive to make all in-game content to be blizzlike. Therefore we have a high standard for fixes being made.
-
-* Customization
-  * It is easy to customize your experience using [modules](#modules).
-
-* Community driven
-  * AzerothCore has an active community of developers, contributors, and users who collaborate, share knowledge, and provide support through forums, Discord channels, and other communication platforms. 
-
-### Modules
-
-AzerothCore is designed to be highly modular, allowing developers to extend and customize the game to suit their preferences or create unique gameplay experiences. This flexibility enables the addition of custom features, content, and modifications.
-
-We have a lot of modules already made by the community, many of which can be found in the [Module Catalogue](https://www.azerothcore.org/catalogue.html#/).
-
-## Installation
-
-Detailed installation instructions are available [here](http://www.azerothcore.org/wiki/installation).
-
-## Contributing
-
-AzerothCore can also serve as a learning resource for aspiring developers who want to understand how WoW servers work, how MMORPGs are structured, how game server emulators are created, or to improve their C++ and SQL knowledge.
-
-If you want to contribute to the project, you will find a lot of resources that will guide you in our [wiki](https://www.azerothcore.org/wiki/contribute).
-
-We also recommend you read our [Contributor Covenant Code of Conduct](https://github.com/azerothcore/azerothcore-wotlk/blob/master/.github/CODE_OF_CONDUCT.md).
-
-Feel free to join our [Discord server](https://discord.gg/gkt4y2x).
-
-🤖 If you use any AI agent to work on AzerothCore, please read our [AI Agentic Engineering guidelines](https://www.azerothcore.org/wiki/agentic-engineering).
-Agent instructions for this repo live in [AGENTS.md](../AGENTS.md), with task-scoped guides in [.agents/docs/](../.agents/docs/); [.agents/README.md](../.agents/README.md) explains how to hook up your agent.
-
-Click on the "⭐ Star" button to help us gain more visibility on GitHub!
-
-## Authors & Contributors
-
-The project was born in 2016 based on SunwellCore. Unfortunately, SunwellCore was published without any git history, so on git there are no credits for all the contributors before 2016.
-
-You can check the [authors](https://github.com/azerothcore/azerothcore-wotlk/blob/master/AUTHORS) file for more details.
-
-## Important Links
-
-- [Doxygen documentation](https://www.azerothcore.org/pages/doxygen/index.html)
-- [Website](http://www.azerothcore.org/)
-- [AzerothCore catalogue](http://www.azerothcore.org/catalogue.html  "Modules, tools, and other stuff for AzerothCore") (modules, tools, etc...)
-- [Our Discord server](https://discord.gg/gkt4y2x)
-- [Our wiki](http://www.azerothcore.org/wiki "Easy to use and developed by AzerothCore founder")
-- [Our forum](https://github.com/azerothcore/azerothcore-wotlk/discussions/)
-- [Our Facebook page](https://www.facebook.com/AzerothCore/)
-- [Our LinkedIn page](https://www.linkedin.com/company/azerothcore/)
-
-## License
-
-- The new AzerothCore source components are released under the [GNU AGPL v3](https://www.gnu.org/licenses/agpl-3.0.en.html)
-- The old sources based on MaNGOS/TrinityCore are released under the [GNU GPL v2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
-
-It's important to note that AzerothCore is not an official Blizzard Entertainment product, and it is not affiliated with or endorsed by World of Warcraft or Blizzard Entertainment. AzerothCore does not in any case sponsor nor support illegal public servers. If you use this project to run an illegal public server and not for testing and learning it is your own personal choice.
-
-## Special thanks
-
-[JetBrains](https://www.jetbrains.com/?from=AzerothCore) is providing free [open-source licenses](https://www.jetbrains.com/community/opensource/) to the AzerothCore developers.
-
-[![JetBrains logo.](https://resources.jetbrains.com/storage/products/company/brand/logos/jetbrains.svg)](https://jb.gg/OpenSourceSupport)
+Credits remain with AzerothCore, the Playerbots core contributors, SunwellCore,
+TrinityCore, MaNGOS and the [authors](../AUTHORS). Keep the
+[GPL-2.0 license](../LICENSE), individual GPL/AGPL source notices and dependency
+licenses with their files.
