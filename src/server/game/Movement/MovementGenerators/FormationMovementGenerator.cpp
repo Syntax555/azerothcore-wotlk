@@ -153,7 +153,8 @@ void FormationMovementGenerator::LaunchMovement(Creature* owner, Unit* target)
         _hasPredictedDestination = false;
     }
 
-    if (velocity == 0.0f)
+    // Spline validation also rejects near-zero catch-up velocities.
+    if (velocity <= 0.01f)
         velocity = target->GetSpeed(MOVE_WALK);
 
     Movement::MoveSplineInit init(owner);
