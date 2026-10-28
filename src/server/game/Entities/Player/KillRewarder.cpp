@@ -257,7 +257,7 @@ void KillRewarder::_RewardGroup()
             if (!_isBattleGround)
             {
                 // 3.1.2. Alter group rate if group is in raid (not for battlegrounds).
-                const bool isRaid = !_isPvP && sMapStore.LookupEntry(_killer->GetMapId())->IsRaid() && _group->isRaidGroup();
+                const bool isRaid = !_isPvP && _group->isRaidGroup();
                 _groupRate = Acore::XP::xp_in_group_rate(_count, isRaid);
             }
 

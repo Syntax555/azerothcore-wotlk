@@ -251,8 +251,9 @@ void Player::Update(uint32 p_time)
                 _restTime = currTime;
 
                 float bubble = 0.125f * sWorld->getRate(RATE_REST_INGAME);
+                // The client doubles the stored bonus, as it does for offline rest.
                 float extraPerSec =
-                    ((float) GetUInt32Value(PLAYER_NEXT_LEVEL_XP) / 72000.0f) *
+                    ((float) GetUInt32Value(PLAYER_NEXT_LEVEL_XP) / 144000.0f) *
                     bubble;
 
                 // speed collect rest bonus (section/in hour)

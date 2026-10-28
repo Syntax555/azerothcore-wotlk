@@ -2418,7 +2418,8 @@ void Player::GiveXP(uint32 xp, Unit* victim, float group_rate, bool isLFGReward)
     // Favored experience increase START
     uint32 zone = GetZoneId();
     float favored_exp_mult = 0;
-    if ((zone == AREA_HELLFIRE_PENINSULA || zone == AREA_HELLFIRE_RAMPARTS || zone == AREA_MAGTHERIDONS_LAIR || zone == AREA_THE_BLOOD_FURNACE || zone == AREA_THE_SHATTERED_HALLS) && HasAnyAuras(32096 /*Thrallmar's Favor*/, 32098 /*Honor Hold's Favor*/))
+    // KillRewarder already applies the linked experience aura to kill XP.
+    if (!victim && (zone == AREA_HELLFIRE_PENINSULA || zone == AREA_HELLFIRE_RAMPARTS || zone == AREA_MAGTHERIDONS_LAIR || zone == AREA_THE_BLOOD_FURNACE || zone == AREA_THE_SHATTERED_HALLS) && HasAnyAuras(32096 /*Thrallmar's Favor*/, 32098 /*Honor Hold's Favor*/))
         favored_exp_mult = 0.05f; // Thrallmar's Favor and Honor Hold's Favor
 
     xp = uint32(xp * (1 + favored_exp_mult));
