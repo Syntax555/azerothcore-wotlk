@@ -89,8 +89,8 @@ void WorldSession::HandleAutoBankItemOpcode(WorldPackets::Bank::AutoBankItem& pa
         return;
     }
 
-    _player->RemoveItem(packet.Bag, packet.Slot, true);
     _player->ItemRemovedQuestCheck(item->GetEntry(), item->GetCount());
+    _player->RemoveItem(packet.Bag, packet.Slot, true);
     _player->BankItem(dest, item, true);
     _player->UpdateTitansGrip();
 }
@@ -119,9 +119,10 @@ void WorldSession::HandleAutoStoreBankItemOpcode(WorldPackets::Bank::AutoStoreBa
             return;
         }
 
+        uint32 const count = item->GetCount();
         _player->RemoveItem(packet.Bag, packet.Slot, true);
         if (Item const* storedItem = _player->StoreItem(dest, item, true))
-            _player->ItemAddedQuestCheck(storedItem->GetEntry(), storedItem->GetCount());
+            _player->ItemAddedQuestCheck(storedItem->GetEntry(), count);
     }
     else                                                    // moving from inventory to bank
     {
@@ -133,8 +134,8 @@ void WorldSession::HandleAutoStoreBankItemOpcode(WorldPackets::Bank::AutoStoreBa
             return;
         }
 
-        _player->RemoveItem(packet.Bag, packet.Slot, true);
         _player->ItemRemovedQuestCheck(item->GetEntry(), item->GetCount());
+        _player->RemoveItem(packet.Bag, packet.Slot, true);
         _player->BankItem(dest, item, true);
         _player->UpdateTitansGrip();
     }

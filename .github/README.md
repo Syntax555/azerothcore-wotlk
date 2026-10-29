@@ -28,6 +28,10 @@ controlled altbots retain their normal character rights and manual talents.
 The assembly configures these integrations in `configs/worldserver.conf` and
 `configs/modules/`; cloning the core alone does not apply those settings.
 
+Native personal-bank handlers update delivery-quest counters before removing
+deposits and credit only the transferred amount when withdrawals merge stacks.
+Banker access and ordinary item/storage checks remain authoritative.
+
 The engine and client remain Wrath-based. Selected historical rules do not make
 this an exact Vanilla or original TBC simulation. Source fixtures cover specific
 contracts; they do not establish complete gameplay, raid, class or population
