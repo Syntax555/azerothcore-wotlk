@@ -64,7 +64,6 @@ jobs:
           lock['core']['url'] = 'https://github.com/' + os.environ['CORE_REPOSITORY'] + '.git'
           lock['core']['revision'] = subprocess.check_output(
               ['git', '-C', '../core', 'rev-parse', 'HEAD'], text=True).strip()
-          lock['core']['patches'] = []
           lockfile.write_text(json.dumps(lock, indent=2) + '\n')
           PYCORE
 
