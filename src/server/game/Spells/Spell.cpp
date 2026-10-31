@@ -3870,17 +3870,19 @@ void Spell::cancel(bool bySelf)
     if (m_selfContainer && *m_selfContainer == this)
         *m_selfContainer = nullptr;
 
-    Unit* dynObjOwner = (unitCaster->GetEntry() == WORLD_TRIGGER && m_originalCaster) ? m_originalCaster : unitCaster;
+    // GameObject casters have no unit caster.
+    Unit* dynObjOwner = (unitCaster && unitCaster->GetEntry() == WORLD_TRIGGER && m_originalCaster) ? m_originalCaster : unitCaster;
 
     // Do not remove current far sight object (already done in Spell::EffectAddFarsight) to prevent from reset viewpoint to player
     if (!(bySelf && m_spellInfo->HasEffect(SPELL_EFFECT_ADD_FARSIGHT)))
     {
-        dynObjOwner->RemoveDynObject(m_spellInfo->Id);
+        if (dynObjOwner)
+            dynObjOwner->RemoveDynObject(m_spellInfo->Id);
 
         if (unitCaster)
             unitCaster->RemoveDynObject(m_spellInfo->Id);
     }
-  
+
     if (m_spellInfo->IsChanneled()) // if not channeled then the object for the current cast wasn't summoned yet
     {
         if (unitCaster)
