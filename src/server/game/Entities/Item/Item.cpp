@@ -735,8 +735,11 @@ void Item::SetState(ItemUpdateState state, Player* forplayer)
     }
     else
     {
-        // unset in queue
-        // the item must be removed from the queue manually
+        // Leave the owner's queue as well: a stale entry is queued again on the next
+        // change, and saving then reaches the second copy after the first deleted it.
+        if (IsInUpdateQueue())
+            if (Player* owner = forplayer ? forplayer : GetOwner())
+                RemoveFromUpdateQueueOf(owner);
         uQueuePos = -1;
         uState = ITEM_UNCHANGED;
     }
