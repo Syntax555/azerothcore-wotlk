@@ -47,8 +47,8 @@ Make validated changes on `Playerbot`, then update the assembly pin. Preserve
 earned-play gates, characters, databases, configuration and pinned history.
 
 The original Playerbots core was imported from
-[mod-playerbots/azerothcore-wotlk at `3f2969ddb0da`](https://github.com/mod-playerbots/azerothcore-wotlk/commit/3f2969ddb0da42b48b4fca050c02b19163ba1e20).
-Its [original README](https://github.com/mod-playerbots/azerothcore-wotlk/blob/3f2969ddb0da42b48b4fca050c02b19163ba1e20/.github/README.md)
+[mod-playerbots/azerothcore-wotlk at `93333d6a9eb0`](https://github.com/mod-playerbots/azerothcore-wotlk/commit/93333d6a9eb00fdf0179adde30da3c17618207d6).
+Its [original README](https://github.com/mod-playerbots/azerothcore-wotlk/blob/93333d6a9eb00fdf0179adde30da3c17618207d6/.github/README.md)
 and [AzerothCore wiki](https://www.azerothcore.org/wiki/) provide general engine
 and API documentation; the assembly guides define this fork's installation.
 
