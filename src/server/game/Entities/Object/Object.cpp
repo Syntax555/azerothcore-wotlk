@@ -63,6 +63,28 @@
 //  see: https://github.com/azerothcore/azerothcore-wotlk/issues/9766
 #include "GridNotifiersImpl.h"
 
+namespace
+{
+// The player a unit acts for: itself, or the player owning or charming it.
+Player const* ActingPlayer(WorldObject const* object)
+{
+    Unit const* unit = object->ToUnit();
+    return unit ? unit->GetCharmerOrOwnerPlayerOrPlayerItself() : nullptr;
+}
+
+// Whether a creature's or gameobject's scripts or visibility conditions hide it from a player.
+bool HiddenFrom(WorldObject const* object, Player const* player)
+{
+    if (Creature const* creature = object->ToCreature())
+        return (creature->IsAIEnabled && !creature->AI()->CanBeSeen(player)) || !player->CanSeeObjectByVisibilityConditions(object);
+
+    if (GameObject const* gameObject = object->ToGameObject())
+        return !gameObject->AI()->CanBeSeen(player) || !player->CanSeeObjectByVisibilityConditions(object);
+
+    return false;
+}
+}
+
 constexpr float VisibilityDistances[AsUnderlyingType(VisibilityDistanceType::Max)] =
 {
     DEFAULT_VISIBILITY_DISTANCE,
@@ -1820,31 +1842,13 @@ bool WorldObject::CanSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
     if (obj->IsAlwaysVisibleFor(this) || CanAlwaysSee(obj))
         return true;
 
-    // Creature scripts
-    if (Creature const* cObj = obj->ToCreature())
-    {
-        if (Player const* player = ToPlayer())
-        {
-            if (cObj->IsAIEnabled && !cObj->AI()->CanBeSeen(player))
-                return false;
+    // A creature or gameobject hidden from a player by its scripts or conditions is absent for that player and the
+    // units it owns or charms, and it does not perceive them either: a hidden creature neither shows nor engages.
+    if (Player const* viewer = ActingPlayer(this); viewer && HiddenFrom(obj, viewer))
+        return false;
 
-            if (!player->CanSeeObjectByVisibilityConditions(obj))
-                return false;
-        }
-    }
-
-    // Gameobject scripts
-    if (GameObject const* goObj = obj->ToGameObject())
-    {
-        if (Player const* player = ToPlayer())
-        {
-            if (!goObj->AI()->CanBeSeen(player))
-                return false;
-
-            if (!player->CanSeeObjectByVisibilityConditions(obj))
-                return false;
-        }
-    }
+    if (Player const* viewed = ActingPlayer(obj); viewed && HiddenFrom(this, viewed))
+        return false;
 
     // pussywizard: arena spectator
     if (obj->IsPlayer())
