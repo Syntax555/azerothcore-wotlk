@@ -15,7 +15,7 @@ For source builds, use the assembly's
 [build guide](https://github.com/Syntax555/mod-playerbots-portable/blob/main/docs/building.md).
 Its [versions.lock.json](https://github.com/Syntax555/mod-playerbots-portable/blob/main/versions.lock.json)
 selects the exact core commit and all matching module commits. This fork's
-`Playerbot` branch is the development branch; use the locked revisions to
+`master` branch is the development branch; use the locked revisions to
 reproduce an assembly. Mixing this core with other module revisions is not a
 verified configuration.
 
@@ -43,16 +43,19 @@ and [validation work](https://github.com/Syntax555/mod-playerbots-portable/blob/
 Read [AGENTS.md](../AGENTS.md), the assembly's
 [contributing guide](https://github.com/Syntax555/mod-playerbots-portable/blob/main/CONTRIBUTING.md)
 and [core integration reference](https://github.com/Syntax555/mod-playerbots-portable/blob/main/docs/module-versions.md#server-modules).
-Make validated changes on `Playerbot`, then update the assembly pin. Preserve
+Make validated changes on `master`, then update the assembly pin. Preserve
 earned-play gates, characters, databases, configuration and pinned history.
 
-The original Playerbots core was imported from
+This core follows
+[Grimfeather/azerothcore-wotlk at `38db9bb1b588`](https://github.com/Grimfeather/azerothcore-wotlk/commit/38db9bb1b588a2562ebcb052af1175a9429e32e6),
+which adds the core changes of Grimfeather's Individual Progression to the
+Playerbots core
 [mod-playerbots/azerothcore-wotlk at `93333d6a9eb0`](https://github.com/mod-playerbots/azerothcore-wotlk/commit/93333d6a9eb00fdf0179adde30da3c17618207d6).
 Its [original README](https://github.com/mod-playerbots/azerothcore-wotlk/blob/93333d6a9eb00fdf0179adde30da3c17618207d6/.github/README.md)
 and [AzerothCore wiki](https://www.azerothcore.org/wiki/) provide general engine
 and API documentation; the assembly guides define this fork's installation.
 
-Credits remain with AzerothCore, the Playerbots core contributors, SunwellCore,
-TrinityCore, MaNGOS and the [authors](../AUTHORS). Keep the
+Credits remain with AzerothCore, the Playerbots core contributors, Grimfeather,
+SunwellCore, TrinityCore, MaNGOS and the [authors](../AUTHORS). Keep the
 [GPL-2.0 license](../LICENSE), individual GPL/AGPL source notices and dependency
 licenses with their files.

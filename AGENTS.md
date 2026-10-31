@@ -8,7 +8,7 @@ skills those rules require, [README](https://github.com/Syntax555/mod-playerbots
 Those rules also apply when working in this fork alone and take precedence over
 imported upstream branch, build and contribution instructions.
 
-Commit validated core changes on `Playerbot`; pin the commit in the assembly's
+Commit validated core changes on `master`; pin the commit in the assembly's
 `versions.lock.json` and record fixture-covered behavior commits in `forkChanges`.
 Keep original upstream history, licenses and file notices. Never rewrite a
 commit pinned by the assembly. Validate changes against the assembly's pinned
