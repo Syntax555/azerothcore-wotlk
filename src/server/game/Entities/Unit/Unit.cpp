@@ -7386,21 +7386,27 @@ void Unit::RemoveAllAttackers()
 
 void Unit::ModifyAuraState(AuraStateType flag, bool apply)
 {
+    // HandleAllEffects can add or remove owned auras, which moves the flat map's storage, so
+    // walk a snapshot as _UpdateSpells does; a local one, because aura states can nest.
+    auto handleCasterAuraState = [this, flag](bool applied)
+    {
+        std::vector<Aura*> auras;
+        auras.reserve(m_ownedAuras.size());
+        for (auto const& [id, aura] : m_ownedAuras)
+            auras.push_back(aura);
+
+        for (Aura* aura : auras)
+            if (!aura->IsRemoved() && aura->GetSpellInfo()->CasterAuraState == flag)
+                if (AuraApplication* aurApp = aura->GetApplicationOfTarget(GetGUID()))
+                    aura->HandleAllEffects(aurApp, AURA_EFFECT_HANDLE_REAL, applied);
+    };
+
     if (apply)
     {
         if (!HasFlag(UNIT_FIELD_AURASTATE, 1 << (flag - 1)))
         {
             SetFlag(UNIT_FIELD_AURASTATE, 1 << (flag - 1));
-            Unit::AuraMap& tAuras = GetOwnedAuras();
-            for (Unit::AuraMap::iterator itr = tAuras.begin(); itr != tAuras.end(); ++itr)
-            {
-                if ((*itr).second->IsRemoved())
-                    continue;
-
-                if ((*itr).second->GetSpellInfo()->CasterAuraState == flag )
-                    if (AuraApplication* aurApp = (*itr).second->GetApplicationOfTarget(GetGUID()))
-                        (*itr).second->HandleAllEffects(aurApp, AURA_EFFECT_HANDLE_REAL, true);
-            }
+            handleCasterAuraState(true);
         }
     }
     else
@@ -7410,15 +7416,7 @@ void Unit::ModifyAuraState(AuraStateType flag, bool apply)
             RemoveFlag(UNIT_FIELD_AURASTATE, 1 << (flag - 1));
 
             if (flag != AURA_STATE_ENRAGE)                  // enrage aura state triggering continues auras
-            {
-                Unit::AuraMap& tAuras = GetOwnedAuras();
-                for (Unit::AuraMap::iterator itr = tAuras.begin(); itr != tAuras.end(); ++itr)
-                {
-                    if ((*itr).second->GetSpellInfo()->CasterAuraState == flag )
-                        if (AuraApplication* aurApp = (*itr).second->GetApplicationOfTarget(GetGUID()))
-                            (*itr).second->HandleAllEffects(aurApp, AURA_EFFECT_HANDLE_REAL, false);
-                }
-            }
+                handleCasterAuraState(false);
         }
     }
 }
