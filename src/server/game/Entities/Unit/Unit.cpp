@@ -3751,33 +3751,45 @@ void Unit::_UpdateSpells(uint32 time)
         }
     }
 
-    // snapshot - UpdateOwner can mutate the map; pointers stay valid (removed auras
-    // are deleted later in _DeleteRemovedAuras)
-    m_auraUpdateSnapshot.clear();
-    m_auraUpdateSnapshot.reserve(m_ownedAuras.size());
-    for (auto& [id, aura] : m_ownedAuras)
-        m_auraUpdateSnapshot.push_back(aura);
-
-    for (Aura* aura : m_auraUpdateSnapshot)
-        if (!aura->IsRemoved())
-            aura->UpdateOwner(time, this);
-
-    // remove expired auras - do that after updates(used in scripts?)
-    for (AuraMap::iterator i = m_ownedAuras.begin(); i != m_ownedAuras.end();)
+    // Players without an open connection, mostly bots, sweep their owned auras every
+    // 100 ms with the accumulated time; aura timing is diff-driven, so only its
+    // resolution changes, and this sweep is a large share of each bot's update.
+    constexpr uint32 UNCONNECTED_AURA_UPDATE_INTERVAL = 100;
+    m_pendingAuraUpdateTime += time;
+    if (!IsPlayer() || !ToPlayer()->GetSession()->IsSocketClosed() ||
+        m_pendingAuraUpdateTime >= UNCONNECTED_AURA_UPDATE_INTERVAL)
     {
-        if (i->second->IsExpired())
-            RemoveOwnedAura(i, AURA_REMOVE_BY_EXPIRE);
-        else if (i->second->GetSpellInfo()->IsChanneled() && i->second->GetCasterGUID() != GetGUID() && !ObjectAccessor::GetWorldObject(*this, i->second->GetCasterGUID()))
-            RemoveOwnedAura(i, AURA_REMOVE_BY_CANCEL); // remove channeled auras when caster is not on the same map
-        else
-            ++i;
+        uint32 const auraTime = m_pendingAuraUpdateTime;
+        m_pendingAuraUpdateTime = 0;
+
+        // snapshot - UpdateOwner can mutate the map; pointers stay valid (removed auras
+        // are deleted later in _DeleteRemovedAuras)
+        m_auraUpdateSnapshot.clear();
+        m_auraUpdateSnapshot.reserve(m_ownedAuras.size());
+        for (auto& [id, aura] : m_ownedAuras)
+            m_auraUpdateSnapshot.push_back(aura);
+
+        for (Aura* aura : m_auraUpdateSnapshot)
+            if (!aura->IsRemoved())
+                aura->UpdateOwner(auraTime, this);
+
+        // remove expired auras - do that after updates(used in scripts?)
+        for (AuraMap::iterator i = m_ownedAuras.begin(); i != m_ownedAuras.end();)
+        {
+            if (i->second->IsExpired())
+                RemoveOwnedAura(i, AURA_REMOVE_BY_EXPIRE);
+            else if (i->second->GetSpellInfo()->IsChanneled() && i->second->GetCasterGUID() != GetGUID() && !ObjectAccessor::GetWorldObject(*this, i->second->GetCasterGUID()))
+                RemoveOwnedAura(i, AURA_REMOVE_BY_CANCEL); // remove channeled auras when caster is not on the same map
+            else
+                ++i;
+        }
+
+        for (VisibleAuraMap::iterator itr = m_visibleAuras.begin(); itr != m_visibleAuras.end(); ++itr)
+            if (itr->second->IsNeedClientUpdate())
+                itr->second->ClientUpdate();
+
+        _DeleteRemovedAuras();
     }
-
-    for (VisibleAuraMap::iterator itr = m_visibleAuras.begin(); itr != m_visibleAuras.end(); ++itr)
-        if (itr->second->IsNeedClientUpdate())
-            itr->second->ClientUpdate();
-
-    _DeleteRemovedAuras();
 
     if (!m_gameObj.empty())
     {
