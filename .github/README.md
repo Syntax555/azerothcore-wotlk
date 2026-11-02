@@ -47,7 +47,7 @@ Make validated changes on `master`, then update the assembly pin. Preserve
 earned-play gates, characters, databases, configuration and pinned history.
 
 This core follows
-[Grimfeather/azerothcore-wotlk at `38db9bb1b588`](https://github.com/Grimfeather/azerothcore-wotlk/commit/38db9bb1b588a2562ebcb052af1175a9429e32e6),
+[Grimfeather/azerothcore-wotlk at `0d754d192126`](https://github.com/Grimfeather/azerothcore-wotlk/commit/0d754d1921261dfd939f91060ebc022eae280f71),
 which adds the core changes of Grimfeather's Individual Progression to the
 Playerbots core
 [mod-playerbots/azerothcore-wotlk at `93333d6a9eb0`](https://github.com/mod-playerbots/azerothcore-wotlk/commit/93333d6a9eb00fdf0179adde30da3c17618207d6).
