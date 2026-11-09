@@ -60,7 +60,7 @@ namespace Movement
             }
 
             if (splineflags.orientationInversed)
-                c.orientation = -c.orientation;
+                c.orientation = Position::NormalizeOrientation(c.orientation + float(M_PI));
         }
         return c;
     }
@@ -221,7 +221,7 @@ namespace Movement
                 LOG_DEBUG("misc.movesplineinitargs", "MoveSplineInitArgs::Validate: small velocity for cyclic spline continuation");
             return false;
         }
-        
+
         CHECK(time_perc >= 0.f && time_perc <= 1.f);
         //CHECK(_checkPathBounds());
         return true;

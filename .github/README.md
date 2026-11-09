@@ -47,11 +47,11 @@ Make validated changes on `master`, then update the assembly pin. Preserve
 earned-play gates, characters, databases, configuration and pinned history.
 
 This core follows
-[Grimfeather/azerothcore-wotlk at `0d754d192126`](https://github.com/Grimfeather/azerothcore-wotlk/commit/0d754d1921261dfd939f91060ebc022eae280f71),
+[Grimfeather/azerothcore-wotlk at `afd7036bab38`](https://github.com/Grimfeather/azerothcore-wotlk/commit/afd7036bab385e96a2c540272680cc0ec2f7dd4d),
 which adds the core changes of Grimfeather's Individual Progression to the
 Playerbots core
-[mod-playerbots/azerothcore-wotlk at `93333d6a9eb0`](https://github.com/mod-playerbots/azerothcore-wotlk/commit/93333d6a9eb00fdf0179adde30da3c17618207d6).
-Its [original README](https://github.com/mod-playerbots/azerothcore-wotlk/blob/93333d6a9eb00fdf0179adde30da3c17618207d6/.github/README.md)
+[mod-playerbots/azerothcore-wotlk at `e7e2e288e7d9`](https://github.com/mod-playerbots/azerothcore-wotlk/commit/e7e2e288e7d9ec30e2dfe6f417178a95986fcbb2).
+Its [original README](https://github.com/mod-playerbots/azerothcore-wotlk/blob/e7e2e288e7d9ec30e2dfe6f417178a95986fcbb2/.github/README.md)
 and [AzerothCore wiki](https://www.azerothcore.org/wiki/) provide general engine
 and API documentation; the assembly guides define this fork's installation.
 
